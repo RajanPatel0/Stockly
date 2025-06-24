@@ -4,7 +4,7 @@ function App() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:5000/')  // your backend URL
+    fetch('http://localhost:5000/')
       .then((res) => res.text())
       .then((data) => setMessage(data))
       .catch((err) => {
@@ -14,9 +14,9 @@ function App() {
   }, []);
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Initial Connection Test 🚀</h1>
-      <p>{message}</p>   {/*this is response from backend "/" route here*/}
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
+      <h1 className="text-4xl font-bold text-blue-600 mb-4">Initial Connection Test 🚀</h1>
+      <p className="text-xl text-gray-700">{message}</p>
     </div>
   );
 }
