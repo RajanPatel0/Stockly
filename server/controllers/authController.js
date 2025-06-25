@@ -31,7 +31,7 @@ const login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });//sends basic info (in json) back to client, token to store on frontend
 
     const isMatch = await user.comparePassword(password);   //model function: this uses bcrypt.compare()
     if (!isMatch)
