@@ -1,20 +1,25 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Register() {
+export default function Register({ setRole }) {
   const [isLogin, setIsLogin] = useState(false);
-  const [role, setRole] = useState("User");
+  const [userRole, setUserRole] = useState("user"); // Changed to lowercase and renamed to avoid confusion
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setMessage("");
 
     const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
     const payload = isLogin
       ? { email, password }
-      : { name, email, password, role };
+      : { name, email, password, role: userRole };
 
     try {
       const res = await fetch(`http://localhost:5000${endpoint}`, {
@@ -26,14 +31,32 @@ export default function Register() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.message || "Something went wrong ❌");
-      } else {
-        localStorage.setItem("token", data.token);
-        setMessage(`${isLogin ? "Login" : "Registration"} successful ✅`);
-        // optional: redirect user based on role
+        throw new Error(data.message || "Something went wrong");
       }
+
+      const userRole = data.user?.role;
+    if (!userRole) {
+      throw new Error("Role information missing in response");
+    }
+
+      // Save token and role to localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", userRole.toLowerCase());
+      
+      // Update role in parent component
+      setRole(userRole.toLowerCase());
+      
+      setMessage(`${isLogin ? "Login" : "Registration"} successful! Redirecting...`);
+      
+      // Redirect based on role
+      setTimeout(() => {
+        navigate(userRole === "vendor" ? "/dashboard" : "/");
+      }, 1500);
+
     } catch (err) {
-      setMessage("Server error ❌");
+      setMessage(err.message || "An error occurred during authentication");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -47,20 +70,22 @@ export default function Register() {
         {!isLogin && (
           <div className="flex justify-center mb-6 gap-6">
             <button
-              onClick={() => setRole("user")}
+              type="button"
+              onClick={() => setUserRole("user")}
               className={`px-6 py-2 rounded-full border ${
-                role === "User"
-                  ? "bg-cyan-500 text-white"
+                userRole === "user"
+                  ? "bg-cyan-500 text-white border-cyan-500"
                   : "border-cyan-400 text-cyan-400 hover:bg-cyan-500 hover:text-white"
               } transition duration-300`}
             >
               User
             </button>
             <button
-              onClick={() => setRole("vendor")}
+              type="button"
+              onClick={() => setUserRole("vendor")}
               className={`px-6 py-2 rounded-full border ${
-                role === "Vendor"
-                  ? "bg-purple-500 text-white"
+                userRole === "vendor"
+                  ? "bg-purple-500 text-white border-purple-500"
                   : "border-purple-400 text-purple-400 hover:bg-purple-500 hover:text-white"
               } transition duration-300`}
             >
@@ -71,61 +96,107 @@ export default function Register() {
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           {!isLogin && (
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            />
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-1 text-gray-300">
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            </div>
           )}
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-          />
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium mb-1 text-gray-300">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium mb-1 text-gray-300">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength="6"
+              className="w-full px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+          </div>
 
           {!isLogin && (
-            <input
-              type="text"
-              value={role}
-              readOnly
-              className="px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-default"
-            />
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium mb-1 text-gray-300">
+                Account Type
+              </label>
+              <input
+                id="role"
+                type="text"
+                value={userRole === "user" ? "User Account" : "Vendor Account"}
+                readOnly
+                className="w-full px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-default capitalize"
+              />
+            </div>
           )}
 
           <button
             type="submit"
-            className="mt-4 w-full py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-700/40"
+            disabled={isLoading}
+            className={`mt-4 w-full py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-700/40 ${
+              isLoading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
           >
-            {isLogin ? "Login" : "Register"}
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              isLogin ? "Login" : "Register"
+            )}
           </button>
-        </form>
 
-        {message && (
-          <p className="mt-4 text-center text-sm text-yellow-300">{message}</p>
-        )}
+          {message && (
+            <p className={`mt-4 text-center text-sm ${
+              message.includes("successful") ? "text-green-400" : "text-yellow-300"
+            }`}>
+              {message}
+            </p>
+          )}
+        </form>
 
         <div className="text-center mt-6">
           <p className="text-gray-400">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
-              className="ml-2 text-cyan-400 hover:underline hover:text-cyan-300"
-              onClick={() => setIsLogin(!isLogin)}
+              type="button"
+              className="ml-2 text-cyan-400 hover:underline hover:text-cyan-300 focus:outline-none"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setMessage("");
+              }}
             >
               {isLogin ? "Register here" : "Login here"}
             </button>
