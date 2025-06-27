@@ -1,23 +1,44 @@
 import { useEffect, useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import HomePage from './pages/HomePage';
+import Register from './components/Register';
+// import Search from './components/Search';
+import Dashboard from './pages/Dashboard';
 
 function App() {
-  const [message, setMessage] = useState('');
+  const [backendStatus, setBackendStatus] = useState('');
+  const [role, setRole] = useState(() => {
+    const storedRole = localStorage.getItem("role");
+    return storedRole ? storedRole.toLowerCase() : null;
+  });
 
   useEffect(() => {
-    fetch('http://localhost:5000/')
-      .then((res) => res.text())
-      .then((data) => setMessage(data))
-      .catch((err) => {
-        console.error('Error connecting to backend:', err);
-        setMessage('❌ Could not connect to backend');
-      });
+    const checkBackend = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/');
+        const data = await res.text();
+        setBackendStatus(data);
+      } catch (err) {
+        console.error('Backend connection error:', err);
+        setBackendStatus('❌ Backend unavailable');
+      }
+    };
+    
+    checkBackend();
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
-      <h1 className="text-4xl font-bold text-blue-600 mb-4">Initial Connection Test 🚀</h1>
-      <p className="text-xl text-gray-700">{message}</p>
-    </div>
+    <>
+      <Navbar role={role} setRole={setRole} />
+      <div className='pt-16'>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/register" element={<Register setRole={setRole} />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+      </div>
+    </>
   );
 }
 

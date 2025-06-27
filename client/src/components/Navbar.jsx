@@ -17,7 +17,8 @@ export default function Navbar({ role, setRole }) {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Logo and Title */}
-        <div className="flex items-center space-x-2 min-w-[120px]">
+        <Link to="/">
+          <div className="flex items-center space-x-2 min-w-[120px]">
           <img
             src="smartlogo.png"
             alt="InVolv Logo"
@@ -26,11 +27,12 @@ export default function Navbar({ role, setRole }) {
           <span className="text-xl sm:text-2xl font-bold tracking-wide bg-gradient-to-r from-cyan-400 to-purple-500 text-transparent bg-clip-text whitespace-nowrap">
             InVolv
           </span>
-        </div>
+        </div> 
+        </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-          <a href="#home" className="text-lg font-medium hover:text-cyan-400 transition-colors duration-200">Home</a>
+          <a href="/" className="text-lg font-medium hover:text-cyan-400 transition-colors duration-200">Home</a>
           <a href="#contact" className="text-lg font-medium hover:text-purple-400 transition-colors duration-200">Contact</a>
           
           {/* Featured Button (Desktop) */}
