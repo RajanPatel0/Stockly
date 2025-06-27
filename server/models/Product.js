@@ -4,6 +4,10 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: String,
   price: Number,
+  image: {
+			type: String,
+			required: [true, "Image is required"],
+	},
   quantity: Number,
   vendor: {
     type: mongoose.Schema.Types.ObjectId,
@@ -11,4 +15,6 @@ const productSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Product', productSchema);
+const Product=mongoose.model('Product', productSchema);
+
+export default Product;
