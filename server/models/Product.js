@@ -2,13 +2,13 @@ import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  description: String,
-  price: Number,
+  description: {type: String, required: true},
+  price: { type:Number, min:0, required: true},
   image: {
 			type: String,
 			required: [true, "Image is required"],
 	},
-  quantity: Number,
+  quantity: {type: Number, required:true},
   vendor: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
