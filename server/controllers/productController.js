@@ -3,7 +3,7 @@ import cloudinary from '../lib/cloudinary.js';
 
 const getProduct= async(req,res)=>{
     try {
-		const products = await Product.find({ vendor: req.params.id }); // find all products
+		const products = await Product.find({}); // find all products
 		res.json({ products });
 	} catch (error) {
 		console.log("Error in getProducts controller", error.message);
@@ -12,7 +12,8 @@ const getProduct= async(req,res)=>{
 };
 
 const addProduct = async (req, res) => {
-  const { name, description, price, image, quantity, vendor } = req.body;
+  try{
+	const { name, description, price, quantity, image } = req.body;
   const uploaded = image
     ? await cloudinary.uploader.upload(image, { folder: 'products' })
     : null;
@@ -21,11 +22,14 @@ const addProduct = async (req, res) => {
     name,
     description,
     price,
-    image: uploaded?.secure_url || '',
     quantity,
-    vendor,
+	 image: uploaded?.secure_url ? uploaded.secure_url : "",
   });
   res.status(201).json({ product });
+  }catch(error){
+	console.log("Error in addProduct Controller", eror.message);
+	res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
 
