@@ -1,13 +1,17 @@
 import React, { useState } from "react";
+import {useProductStore} from '../stores/useProductStore';
 
-export default function AddProductForm() {
+export default function AddProduct() {
   const [product, setProduct] = useState({
     name: "",
     description: "",
     price: "",
     quantity: "",
-    image: null,
+    image: "",
   });
+
+  const {createProduct}= useProductStore();
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -17,14 +21,34 @@ export default function AddProductForm() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleImageChange=(e)=>{
+    const file=e.target.files[0];
+    if(file){
+      const reader=new FileReader();
+
+      reader.onloadend=()=>{
+        setProduct({...product, image:reader.result});
+      }
+
+      reader.readAsDataURL(file);  //it will convert it into base64 format: string representation of image
+    }
+
+   }
+
+  const handleSubmit =async (e) => {
     e.preventDefault();
     // Logic to send product data to backend
     console.log(product);
+    try{
+      await createProduct(product);
+      setProduct({name: "", description:"", price:"", quantity:"", image:""})
+    }catch{
+      console.log("error creating a product");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a23] via-[#0f0f3d] to-[#141457] p-6 text-white flex flex-col items-center justify-center">
+    <div className="min-h-xlg-gradient-to-br from-[#0a0a23] via-[#0f0f3d] to-[#141457] p-6 text-white flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl bg-[#1f1f3b] p-8 rounded-3xl shadow-2xl shadow-blue-800/40">
         <h2 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-cyan-400 to-purple-500 text-transparent bg-clip-text">
           Add New Product
@@ -75,7 +99,7 @@ export default function AddProductForm() {
             type="file"
             name="image"
             accept="image/*"
-            onChange={handleChange}
+            onChange={handleImageChange}
             className="file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 hover:file:from-purple-600 hover:file:to-pink-600"
           />
 
