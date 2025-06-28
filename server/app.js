@@ -6,19 +6,34 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app=express();
-app.use(cors());
-app.use(express.json());
+
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true
+}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 //importing routes
-// import authRoutes from './routes/authRoutes.js';
-// import productRoutes from './routes/productRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+
+
 
 //using routes
 app.get('/', (req, res) => {
   res.send('Backend is connected ✅');
 });
-// app.use('/api/auth', authRoutes);
-// app.use('/api/products', productRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: 'Internal server error',
+    error: err.message
+  });
+});
 
 //MongoDB connecting
 mongoose.connect(process.env.MONGO_URI)
