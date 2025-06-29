@@ -7,6 +7,7 @@ export default function UpdateProduct({ product, onClose, onSave }) {
     price: "",
     quantity: "",
     image: "",
+    file: null, // base64 encoded image
   });
 
   useEffect(() => {
@@ -17,6 +18,7 @@ export default function UpdateProduct({ product, onClose, onSave }) {
         price: product.price || "",
         quantity: product.quantity || "",
         image: product.image || "",
+        file: null,
       });
     }
   }, [product]);
@@ -26,9 +28,24 @@ export default function UpdateProduct({ product, onClose, onSave }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({
+          ...prev,
+          image: reader.result, // preview and send base64
+          file: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    onSave({ ...formData });
   };
 
   if (!product) return null;
@@ -53,7 +70,7 @@ export default function UpdateProduct({ product, onClose, onSave }) {
             value={formData.name}
             onChange={handleChange}
             placeholder="Product Name"
-            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white"
           />
 
           <textarea
@@ -62,7 +79,7 @@ export default function UpdateProduct({ product, onClose, onSave }) {
             onChange={handleChange}
             placeholder="Description"
             rows="3"
-            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white"
           ></textarea>
 
           <input
@@ -71,7 +88,7 @@ export default function UpdateProduct({ product, onClose, onSave }) {
             value={formData.price}
             onChange={handleChange}
             placeholder="Price"
-            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white"
           />
 
           <input
@@ -80,21 +97,27 @@ export default function UpdateProduct({ product, onClose, onSave }) {
             value={formData.quantity}
             onChange={handleChange}
             placeholder="Quantity"
-            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400"
+            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white"
           />
 
           <input
-            type="text"
-            name="image"
-            value={formData.image}
-            onChange={handleChange}
-            placeholder="Image URL"
-            className="w-full px-4 py-2 bg-[#2b2b4a] rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="text-white"
           />
+
+          {formData.image && (
+            <img
+              src={formData.image}
+              alt="Preview"
+              className="w-20 h-20 object-cover rounded-lg"
+            />
+          )}
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg shadow-indigo-700/40"
+            className="w-full py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300"
           >
             Save Changes
           </button>
