@@ -50,7 +50,7 @@ export default function Register({ setRole }) {
       
       // Redirect based on role
       setTimeout(() => {
-        navigate(userRole === "vendor" ? "/dashboard" : "/");
+        navigate(userRole === "vendor" ? "/" : "/");
       }, 1500);
 
     } catch (err) {
