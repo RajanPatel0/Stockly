@@ -7,7 +7,7 @@ import {addProduct,
 
 const router = express.Router();
 
-router.get('/vendor/:id', getProduct);
+router.get('/', getProduct);
 router.post('/add', addProduct);
 router.put('/update/:id', updateProduct);   //update is of quantity,image,name,desc,price
 router.delete('/delete/:id', deleteProduct);
