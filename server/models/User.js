@@ -6,6 +6,13 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['vendor', 'user', 'admin'], default: 'user' },
+
+  // Only for vendors:
+  storeAddress: { type: String },
+  storeLocation: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number] }, //for- [lng, lat]
+  }
 });
 
 userSchema.pre('save', async function (next) {
