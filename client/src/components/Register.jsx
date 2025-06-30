@@ -1,15 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix Leaflet marker icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
+
+function LocationMarker({ storeLocation, setStoreLocation }) {
+  useMapEvents({
+    click(e) {
+      setStoreLocation(e.latlng);
+    },
+  });
+  return storeLocation ? <Marker position={storeLocation} /> : null;
+}
 
 export default function Register({ setRole }) {
   const [isLogin, setIsLogin] = useState(false);
-  const [userRole, setUserRole] = useState("user"); // Changed to lowercase and renamed to avoid confusion
+  const [userRole, setUserRole] = useState("vendor");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [storeAddress, setStoreAddress] = useState(""); // 🆕
+  const [storeLocation, setStoreLocation] = useState(null); // 🆕
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Auto locate vendor on first map load
+  useEffect(() => {
+    if (userRole === "vendor" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) =>
+        setStoreLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        })
+      );
+    }
+  }, [userRole]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,9 +59,19 @@ export default function Register({ setRole }) {
     setMessage("");
 
     const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+
     const payload = isLogin
       ? { email, password }
-      : { name, email, password, role: userRole };
+      : {
+          name,
+          email,
+          password,
+          role: userRole,
+          ...(userRole === "vendor" && {
+            storeAddress,
+            storeLocation,
+          }),
+        };
 
     try {
       const res = await fetch(`http://localhost:5000${endpoint}`, {
@@ -35,24 +87,16 @@ export default function Register({ setRole }) {
       }
 
       const userRole = data.user?.role;
-    if (!userRole) {
-      throw new Error("Role information missing in response");
-    }
+      if (!userRole) throw new Error("Role information missing in response");
 
-      // Save token and role to localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", userRole.toLowerCase());
-      
-      // Update role in parent component
       setRole(userRole.toLowerCase());
-      
+
       setMessage(`${isLogin ? "Login" : "Registration"} successful! Redirecting...`);
-      
-      // Redirect based on role
       setTimeout(() => {
         navigate(userRole === "vendor" ? "/" : "/");
       }, 1500);
-
     } catch (err) {
       setMessage(err.message || "An error occurred during authentication");
     } finally {
@@ -156,6 +200,42 @@ export default function Register({ setRole }) {
                 className="w-full px-4 py-3 rounded-lg bg-[#2b2b4a] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-default capitalize"
               />
             </div>
+          )}
+
+          {/* Vendor only: address input + map */}
+          {!isLogin && userRole === "vendor" && (
+            <>
+              <div>
+                <label htmlFor="storeAddress" className="block text-sm font-medium mb-1 text-gray-300">
+                  Store Address
+                </label>
+                <input
+                  id="storeAddress"
+                  type="text"
+                  placeholder="Store Address"
+                  value={storeAddress}
+                  onChange={(e) => setStoreAddress(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-lg bg-[#2b2b4a] text-white"
+                />
+              </div>
+
+              {storeLocation && (
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-300">Pin Store Location</label>
+                  <MapContainer
+                    center={[storeLocation.lat, storeLocation.lng]}
+                    zoom={14}
+                    scrollWheelZoom
+                    style={{ height: "250px", borderRadius: "10px" }}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <LocationMarker storeLocation={storeLocation} setStoreLocation={setStoreLocation} />
+                  </MapContainer>
+                  <p className="text-xs text-gray-400 mt-2">📍 Click on map to update location</p>
+                </div>
+              )}
+            </>
           )}
 
           <button
