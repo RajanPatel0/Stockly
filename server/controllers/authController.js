@@ -23,24 +23,32 @@ const sendAuthResponse = (res, status, user) => {
 
 const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, storeAddress, storeLocation } = req.body;
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
+    if (existingUser) return res.status(400).json({ message: 'Email already registered' });
 
-    const user = new User({ name, email, password, role });
-    await user.save();
-    sendAuthResponse(res, 201, user);
-
-  } catch (err) {
-    res.status(500).json({ 
-      message: 'Registration failed', 
-      error: err.message 
+    const newUser = new User({
+      name,
+      email,
+      password,
+      role,
+      ...(role === 'vendor' && {
+        storeAddress,
+        storeLocation: {
+          type: "Point",
+          coordinates: [storeLocation.lng, storeLocation.lat]
+        }
+      })
     });
+
+    await newUser.save();
+    sendAuthResponse(res, 201, newUser);
+  } catch (err) {
+    res.status(500).json({ message: "Registration failed", error: err.message });
   }
 };
+
 
 const login = async (req, res) => {
   try {
