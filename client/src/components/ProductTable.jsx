@@ -26,7 +26,7 @@ export default function ProductTable() {
     <div className="w-full max-w-6xl mx-auto mt-10 px-4">
       <h2 className="text-center text-3xl font-bold mb-8 text-white bg-gradient-to-r from-cyan-400 to-purple-500 text-transparent bg-clip-text">
         Your Products
-      </h2>
+      </h2> 
 
       <div className="overflow-x-auto rounded-xl shadow-xl shadow-blue-800/40">
         <table className="min-w-full bg-[#1c1c3c] text-white rounded-xl">
