@@ -17,7 +17,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 //importing routes
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
-
+import searchRoutes from './routes/searchRoutes.js';
 
 
 //using routes
@@ -26,6 +26,7 @@ app.get('/', (req, res) => {
 });
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/products', searchRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
