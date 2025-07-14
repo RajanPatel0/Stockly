@@ -14,7 +14,7 @@ export const searchProducts = async (req, res) => {
     const products = await Product.find({
       name: { $regex: query, $options: "i" },  // case-insensitive
       quantity: { $gt: 0 }
-    }).populate("vendor", "storeName location address"); // get vendor info
+    }).populate("vendor", "name storeAddress storeLocation"); // get vendor info
 
     res.status(200).json({ products });
   } catch (err) {
