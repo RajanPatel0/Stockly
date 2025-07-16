@@ -10,7 +10,7 @@ export default function MapPage() {
   useEffect(() => {
     async function fetchVendor() {
       try {
-        const res = await axios.get(`/users/vendor/${vendorId}`);
+        const res = await axios.get(`/auth/vendor/${vendorId}`);
         setVendor(res.data.vendor);
       } catch (err) {
         console.error("Failed to fetch vendor:", err);
@@ -28,9 +28,10 @@ export default function MapPage() {
     <div className="min-h-screen bg-[#0f0f3d] text-white flex flex-col items-center justify-center p-6">
       <h2 className="text-2xl font-bold mb-4">{vendor.name}'s Store Location</h2>
       <MapLocation
-        location={vendor.storeLocation?.coordinates}
-        storeName={vendor.name}
-        address={vendor.storeAddress}
+        lat={vendor.storeLocation.coordinates[1]}  // lat is 2nd
+  lng={vendor.storeLocation.coordinates[0]}  // lng is 1st
+  storeName={vendor.name}
+  address={vendor.storeAddress}
       />
     </div>
   );
