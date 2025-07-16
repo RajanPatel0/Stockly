@@ -74,4 +74,18 @@ const login = async (req, res) => {
   }
 };
 
+export const getVendorById = async (req, res) => {
+  try {
+    const vendor = await User.findById(req.params.id);
+    if (!vendor || vendor.role !== 'vendor') {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    res.status(200).json({ vendor });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+
 export { register, login };
